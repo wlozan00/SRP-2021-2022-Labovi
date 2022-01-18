@@ -511,3 +511,35 @@ Na pojedinim funkcija primjenit ćemo metode iterativnog i memory-hard hashiranj
 Funkcije koje koristimo su:
 
 HASH_MD5, HASH_SHA256, AES, Linux CRYPT 5k rounds, Linux CRYPT 10k rounds
+
+# Vjezba 5
+
+## Online password guessing atack
+
+Na ovim labovima smo koristili alat nmap koji omogucava uvid u trenutno stanje nase mreze obavljajuci port scaning.
+
+Nakon toga odredimo range ip adresa od kojih zelimo iscitati sve aktivne hostove i njihove portove u odregenom range-u.
+
+Na lokalnoj mrezi ucionice su  se nalazili docker containeri, te smo morali naci onaj koji sadrzi nase ime i  spojit se na njega komandom ssh *docker_container_name.* 
+
+Pri pokusaju spajanja na conatiner nedostajala nam je lozinka koju smo morali dohvatiti.
+
+Za dohvacanje lozinke koristili smo alat zvan hydra te smo pomocu njega izvrsili online napad. Medutim, keyspace sifre je iznosio otprilike 2^30-tu, a prosjecni broj pokusaja u minuti iznosi 64, sto znaci da bi pogadanje sifre jednostavno predugo trajalo.
+
+Jedino rjesenje koje nam je preostalo je koristenje predefined dictionary-a. Kada njih dohvatimo sa servera preostaje nam jos hydru podesiti da napad obavlja iz trazenog dictionary-a i nama jos preostaje cekati da hydra obavi svoje. Kada pronade lozinku iskoristimo ju za spajanje na remote racunalo, koje nam omogucuje nas docker_container.
+
+## Offline password guessing atack
+
+U ovom djelu vjezbe cilj nam je doci do lozinke nekih drugih korisnika te spojit se na njihovo remote racunalo.
+
+Za pocetak moramo pronaci folder unutar kojeg se nalaze hashirane vrijednosti lozinki.U nasem slucaju to je folder /etc/shadow.
+
+Kako nas user nema privilegiju pristupa tom folderu prije nego sto unesemo komandu za iscitavanje zeljenog file-a moramo utipkati key-word sudo.
+
+Izaberemo neku od nasumicnih hash funkcija i spremimo ju u file kojem dodjeljujemo ime hash.txt. Za iscitavanje hasheva i dohvacanje lozinki koristimo naredbu hashcat, ali i u ovom slucaju moramo koristiti unaprijed pripremljene dictionary-e.
+
+U command-prompt unesemo naredbu:
+
+hashcat --force -m 1800 -a 0 hash.txt dictionary/g4/dictionary_offline.txt --status --status-timer 10
+
+Nakon unosa navedene naredbe preostaje nam jos cekanje da hashcat pronade lozinku i da se pomocu nje logiramo na remote racunalo kao neki drugi user.
