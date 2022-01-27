@@ -543,3 +543,53 @@ U command-prompt unesemo naredbu:
 hashcat --force -m 1800 -a 0 hash.txt dictionary/g4/dictionary_offline.txt --status --status-timer 10
 
 Nakon unosa navedene naredbe preostaje nam jos cekanje da hashcat pronade lozinku i da se pomocu nje logiramo na remote racunalo kao neki drugi user.
+
+# Vjezba 6 - Linux permissions and acls
+
+## Kreiranje korisnika
+
+Svaki korisnik ima svoj jedinstveni user id i pripadnik je barem jedne grupe.
+
+Novi korisnici se kreiraju naredbom sudo adduser <ime_korisnika>
+
+Mogucnost kreiranja novih korisnika ima super user, zato smo morali unijeti kljucnu rijec sudo.
+
+Nakon unosa lozinki novih korisnika logiramo se kao oni naredbom su - <ime_korisnika>. Oba korisnika pripadaju samo jednoj grupi (istog imena kao i korisnik)
+
+  
+
+## Kreiranje datoteka i manipulacija privilegijama
+
+Ulogiramo se kao jedan od novokreiranih korisnika i kreiramo novi folder (srp) i unutar tog foldera kreiramo novi file (security.txt)
+
+Za uvid u vlasnike resursa i dopustenja definirana nad njima koristimo naredbe ls - l <file_path/file_name> i getfacl <file_path/file_name>
+
+Unosom ovih naredbi user moze imati 3 razlicita dopustenja (moguce imati vise privilegija istovremeno): r(read), w(write), x(execute)
+
+Naredbom chmod u -w security.txt oduzeli smo pravo vlasnika da mjenja sadrzaj datoteke security.txt. Ako zelimo kao drugi korisnik procitati sadrzaj datoteke security.txt, unesemo naredbu cat file_path/security.txt. Drugi korisnik pripada grupi others (za ovu datoteku), a vidimo da pripadnici te grupe imaju r privilegiju, odnosno dopusteno im je iscitati sadrzaj datoteke security.txt.
+
+Za vracanje oduzetih prava ili dodavanjem novih prava koristimo naredbu chmod + (r, w, x)
+
+Za oduzimanje prava citavoj grupi koristimo naredbu chmod -o -(r,w,x) <file_name>
+
+Ako zelimo da samo jedan clan odredene grupe ima sva prava nad fileom security.txt, onda tog usera dodamo u grupu sa tim pravima naredbom usermod -aG group_name user_name
+
+## Kontrola pristupa koristenjem ACL-a
+
+Za inspekciju i modifikaciju ACL-ova resursa koristimo programe getfacl i setfacl.
+
+Za dodavanje usera u ACL datoteke file.txt koristi se naredba:
+
+setfacl -m u:user:r /file_path/file.txt 
+
+Nakon ove naredbe user ima pravo citanja datoteke file.txt
+
+Za napraviti novu grupu i nju dodati u ACL datoteke file.txt kreiramo grupu reading_group i nju dodamo u ACL naredbom:
+
+sudo setfacl -m g:reading_group:r /file_path/file.txt
+
+U ovom slucjau svim clanovima grupe reading_group smo dali pravo citanja datoteke file.txt.
+
+## Linux procesi i kontrola pristupa
+
+Svaki linux proces u izvrsavanju ima svoj jedinstveni identifikator, process identifier PID. Osim toga, svakom od procesa se pridjeli id trenutno logiranog user-a, UID. Na temelju UID-a Kernel ce odlucivat iima li proces pristup odredenim resursima ili ne.
